@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+        <style>
+            #map {
+                height: 400px;
+                width: 100%;
+
+            }
+        </style>
+</head>
+<body>
+
+    <h3>Map</h3>
+    <div id="map"></div>
+
+
+     <form id="locationForm">
+          <fieldset >
+            <legend>Login</legend>
+            <div class="mb-3">
+              <label for="disabledTextInput" class="form-label">name</label>
+                  <input type="text" name="name" class="form-control" placeholder="name"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">description</label>
+                  <input type="text" name="description" class="form-control" placeholder="description"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">address</label>
+                  <input type="text" name="address" class="form-control" placeholder="address"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">lat</label>
+                  <input type="text" name="lat" id="txtLat" class="form-control" placeholder="lat"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">lng</label>
+                  <input type="text" name="lng" id="txtLng" class="form-control" placeholder="lng"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">photo</label>
+                  <input type="text" name="photo" class="form-control" value="test.jpg"/>
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">userID</label>
+                  <input type="text" name="userID" class="form-control" value="1" />
+                </div>
+                <div class="mb-3">
+                  <label for="disabledSelect" class="form-label">Status</label>
+                  <input type="text" name="status" class="form-control" value="1" />
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+              </fieldset>
+        </form>
+
+
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbHpVIghN8MOdVePby7tndqsKpZXZ6FIs&loading=async&callback=initMap">
+
+</script>
+
+    <script src="map.js"></script>
+
+
+
+</body>
+</html>
+
+
+<!--
+
+<!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Users from Python API</title>
+    </head>
+
+<body>
+    <table>
+        <thead>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Lastname</th>
+            <th>Phone</th>
+            <th>Date Of Birth</th>
+            <th>Username</th>
+            <th>Status</th>
+        </thead>
+        <tbody id="datatable">
+            <tr>Loading data..</tr>
+        </tbody>
+    </table>
+    <!--<script src="script.js"></script>-->
+    <!--</body>
+</html>-->
