@@ -1,11 +1,14 @@
 from flask import Flask
 from controllers.UserController import user_bp
 from controllers.LocationController import location_bp
+from controllers.PhotoController import photo_bp
+
 app = Flask(__name__)
 from flask_cors import CORS
 
 app.register_blueprint(user_bp)
 app.register_blueprint(location_bp)
+app.register_blueprint(photo_bp)
 @app.route('/')
 def home():
     return {
