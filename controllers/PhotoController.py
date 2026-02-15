@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify
 import json
 from models.Photo import Photo, RecordNotFoundException
+from services.Metadata import get_image
+import base64
+
 
 # Export to server
 photo_bp = Blueprint('photo_bp', __name__)
@@ -18,19 +21,29 @@ def get_photos():
             "status": 1,
             'errorMessage' :(e)
         })
-
+  
 #POST
 @photo_bp.route("/photos", methods=["POST"])
 def add():
     try:
         data = request.get_json()
+         
+        #base64 t bytes
+        image_base64 = data.get("imageData")
+        image_bytes = base64.b64decode(image_base64)
+        #get metadata
+        metadata_json = get_image(image_bytes)
 
-        # user object
+        # phto object
         p = Photo()
 
         p.userID = data.get("userID")
         p.title = data.get("title")
-        p.imageData = data.get("imageData")
+
+        #metadata json string
+        p.imageData = json.dumps(metadata_json)
+
+
         p.contentType = data.get("contentType")
         p.createdAt = data.get("createdAt")
         p.locationID = data.get("locationID")
@@ -40,7 +53,8 @@ def add():
 
         return jsonify({
             "status": 0,
-            "message": "Location added successfully"
+            "message": "Photo added successfully",
+            "metadata": metadata_json
         })
 
     except Exception as e:

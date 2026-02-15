@@ -9,7 +9,7 @@ user_bp = Blueprint('user_bp', __name__)
 
 # GET ALL (/Users)
 @user_bp.route("/users", methods=["GET"])
-@require_auth #we are calling our own function
+#require_auth #we are calling our own function
 def get_users():
     try:
         return jsonify({
@@ -49,10 +49,9 @@ def add():
 
         u.name = data.get("name")
         u.lastname = data.get("lastname")
-        u.dateOfBirth = data.get("dateOfBirth")
+        u.email = data.get("email")
         u.username = data.get("username")
         u.password = data.get("password")
-        u.phone = data.get("phone")
         u.status = data.get("status", 1)
 
         # send data
