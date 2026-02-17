@@ -4,7 +4,7 @@ import json
 import io
 import base64
  
-def get_exif_data(image_path):
+'''#def get_exif_data(image_path):
     try:
         image = Image.open(image_path)
         exif_data = {}
@@ -43,8 +43,8 @@ def get_exif_data(image_path):
         return {
             "error": str(e)
         }
- 
- 
+
+''' 
 def convert_to_degrees(value):
     try:
         d = float(value[0])
@@ -74,7 +74,7 @@ def get_coordinates(gps_info):
  #en lugar de eso, recibir la imagen
  #lat, lng <-
  #almacenar todo dentro de funcion, recibe imagen y retorno json completo  y lo recibe para agregar foto
-
+'''
 def get_image(image_bytes):
 
     image = Image.open(io.BytesIO(image_bytes))
@@ -106,4 +106,60 @@ def get_image(image_bytes):
         else:
             print("There is not GPS info...")
 
-        return metadata_json
+        return metadata_json bro i hate this fr'''
+
+def make_json_serializable(data):
+    if isinstance(data, dict):
+        return {k: make_json_serializable(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [make_json_serializable(i) for i in data]
+    elif isinstance(data, tuple):
+        return tuple(make_json_serializable(i) for i in data)
+    else:
+        try:
+            json.dumps(data)
+            return data
+        except TypeError:
+            return str(data)
+
+
+def get_image(image_bytes):
+    try:
+        image = Image.open(io.BytesIO(image_bytes))
+        exif_data = {}
+        info = image._getexif()
+
+        if not info:
+            return {
+                "hasExif": False,
+                "metadata": None,
+                "latitude": None,
+                "longitude": None
+            }
+
+        for tag, value in info.items():
+            decoded = TAGS.get(tag, tag)
+
+            if decoded == "GPSInfo":
+                gps_data = {}
+                for t in value:
+                    sub_decoded = GPSTAGS.get(t, t)
+                    gps_data[sub_decoded] = value[t]
+                exif_data["GPSInfo"] = gps_data
+            else:
+                exif_data[decoded] = value
+
+        lat, lon = get_coordinates(exif_data.get("GPSInfo"))
+
+        return make_json_serializable({
+            "hasExif": True,
+            #"metadata": exif_data,
+            "latitude": lat,
+            "longitude": lon
+        })
+
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }

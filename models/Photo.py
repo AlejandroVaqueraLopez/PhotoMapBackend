@@ -14,14 +14,14 @@ class Photo:
         self._id = 0
         self._userID = None #objeto de clase usuario
         self._title = ""
-        self._imageData = ""
-        self._contentType = ""
+        self._description = ""
+        self._imagePath = ""
         self._createdAt = ""
         self._locationID = None #clase Location
 
         #parameters
-        if len(args) == 7:
-            self._id, self._userID, self._title, self._imageData, self._contentType, self._createdAt ,self._locationID = args
+        if len(args) ==7:
+            self._id, self._userID, self._title, self._description, self._imagePath, self._createdAt ,self._locationID = args
         elif len(args) == 1:
             self.load_by_id(args[0])
 
@@ -42,14 +42,15 @@ class Photo:
     def title(self, value): self._title = value
 
     @property
-    def imageData(self): return self._imageData
-    @imageData.setter
-    def imageData(self,value): self._imageData = value
+    def description(self): return self._description
+    @description.setter
+    def description(self, value): self._description = value
 
     @property
-    def contentType(self): return self._contentType
-    @contentType.setter
-    def contentType(self,value): self._contentType = value
+    def imagePath(self): return self._imagePath
+
+    @imagePath.setter
+    def imagePath(self, value): self._imagePath = value
 
     @property
     def createdAt(self): return self._createdAt
@@ -67,12 +68,12 @@ class Photo:
             with SQLServerConnection.get_connection() as conn:
                     cursor = conn.cursor()
                     cursor.execute(
-                        "SELECT PhotoID, UserID, Title, ImageData, ContentType, CreatedAt, LocationID FROM Photos Where PhotoID = ?",
+                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID FROM Photos Where PhotoID = ?",
                         photo_id
                     )
                     row = cursor.fetchone()
                     if row :
-                        self.id, self.userID, self.title, self.imageData, self.contentType, self.createdAt, self.locationID = row
+                        self.id, self.userID, self.title, self._description , self._imagePath, self.createdAt, self.locationID = row
                     else:
                         raise RecordNotFoundException(f"Photo with id {photo_id} was not found.")  
 
@@ -85,9 +86,10 @@ class Photo:
                 {
                     "id":self._id,
                     "userID":self._userID,
-                    "imageData":self._imageData,
-                    "contentType": self._contentType,
-                    "createdAt":self._createdAt,
+                    "title": self._title,
+                    "description":self._description,
+                    "imagePath": self._imagePath,
+                    "createdAt": self._createdAt.isoformat() if self._createdAt else None,
                     "LocationID":self._locationID
                 }
             )
@@ -95,13 +97,14 @@ class Photo:
     #get all (read)
     @staticmethod
     def get_all():
+
             list = []
             try:
                 with SQLServerConnection.get_connection() as conn:
                     cursor = conn.cursor()
 
                     cursor.execute(
-                        "SELECT PhotoID, UserID, Title, ImageData, ContentType, CreatedAt, LocationID FROM Photos Order By Title"
+                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID FROM Photos ORDER BY Title"
                     )
                     for row in cursor.fetchall():
                         list.append(Photo(*row))
@@ -112,16 +115,15 @@ class Photo:
     
     #add (create) 
     #recibir como parametro la foto
-    #almacenar json completo
-    #recibir foto y guardarlo en imageData como json
     def add(self):
         try:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO Photos (UserID, Title, ImageData, ContentType, CreatedAt,LocationID) Values (?, ?, ?, ?, ?,?)",
-                   (self._userID, self._title, self._imageData, self._contentType, self._createdAt, self._locationID)
+                    "INSERT INTO Photos (UserID, Title, Description, ImagePath, LocationID) Values (?, ?, ?, ?, ?)",
+                   (self._userID, self._title, self._description ,self._imagePath, self._locationID)
             )
+            conn.commit()
         except Exception as ex:
             raise ex
         
@@ -144,10 +146,10 @@ class Photo:
                 cursor = conn.cursor()
                 cursor.execute(
                     """UPDATE Photos
-                    SET UserID = ?, Title = ?, ImageData = ?, ContentType = ?, CreatedAt = ?, LocationID = ?
+                    SET UserID = ?, Title = ?, Description = ?, ImagePath = ?, CreatedAt = ?, LocationID = ?
                     WHERE PhotoID = ?""",
-                    (self._userID, self._title, self._imageData,
-                    self._contentType, self._createdAt,
+                    (self._userID, self._title,
+                    self._description, self._imagePath,self._createdAt,
                     self._locationID, self._id)
                 )
         except Exception as ex:

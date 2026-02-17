@@ -12,17 +12,14 @@ class Location:
     def __init__(self, *args):
         self._id = 0
         self._name = ""
-        self._description = ""
         self._address = ""
         self._lat = 0.0
         self._lng = 0.0
-        self._photo = ""
-        self._userID = None #objeto de clase usuario
         self._status = 1
 
-        #parameters = 9
-        if len(args) == 9:
-            self._id, self._name, self._description, self._address, self._lat, self._lng, self._photo, self._userID, self._status = args
+        #parameters = 6
+        if len(args) == 6:
+            self._id, self._name, self._address, self._lat, self._lng, self._status = args
         elif len(args) == 1:
             self.load_by_id(args[0])
 
@@ -36,11 +33,6 @@ class Location:
     def name(self): return self._name
     @name.setter
     def name(self, value): self._name = value
-
-    @property
-    def description(self): return self._description
-    @description.setter
-    def description(self, value): self._description = value
 
     @property
     def address(self): return self._address
@@ -58,16 +50,6 @@ class Location:
     def lng(self, value): self._lng = value
 
     @property
-    def photo(self): return self._photo
-    @photo.setter
-    def photo(self, value): self._photo = value
-
-    @property
-    def userID(self): return self._userID
-    @userID.setter
-    def userID(self, value): self._userID = value
-
-    @property
     def status(self): return self._status
     @status.setter
     def status(self, value): self._status = value
@@ -78,13 +60,12 @@ class Location:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select Id, Name, Description, Address, Lat, Lng, Photo, UserID, Status From Locations Where Id = ?",
+                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Where Id = ?",
                     (id)
                 )
                 row = cursor.fetchone()
                 if row:
-                    self._id, self._name, self._description, self._address, self._lat, self._lng, self._photo, user_id, self._status = row
-                    self._userID = User(user_id)
+                    self._id, self._name, self._address, self._lat, self._lng, self._status = row
                 else:
                     raise RecordNotFoundException(f"Location with id {id} was not found.")
         except Exception as ex:
@@ -96,19 +77,17 @@ class Location:
             {
                 "id": self._id,
                 "name": self._name,
-                "description": self._description,
                 "address": self._address,
                 "lat": float(self._lat) if self._lat is not None else None,
                 "lng": float(self._lng) if self._lng is not None else None,
-                "photo": self._photo,
                 "status": self._status,
-                "user": json.loads(self._userID.to_json()) if isinstance(self._userID, User) else self._userID
             }
         )
 
     #get all locations
     @staticmethod
     def get_all():
+        
         list = []
         try:
             with SQLServerConnection.get_connection() as conn:
@@ -116,12 +95,11 @@ class Location:
                 cursor = conn.cursor()
 
                 cursor.execute(
-                    "Select Id, Name, Description, Address, Lat, Lng, Photo, UserID, Status From Locations Order By Name"
+                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Order By Name"
                 )
 
                 for row in cursor.fetchall():
                     location = Location(*row)
-                    location._userID = User(location._userID)
                     list.append(location)
 
         except Exception as ex:
@@ -129,19 +107,27 @@ class Location:
 
         return list
 
+    #ADD locations
     def add(self):
+        
         try:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 #self._userID = User()
-                print(self._lat)
+                #print(self._lat)
                 cursor.execute(
-                    "Insert Into Locations (Name, Description, Address, Lat, Lng, Photo, UserID, Status) Values (?, ?, ?, ?, ?, ?, ?, ?)",
-                    (self._name, self._description, self._address, self._lat, self._lng, self._photo, self._userID, self._status)
+                    "Insert Into Locations (Name, Address, Lat, Lng, Status) OUTPUT INSERTED.LocationID Values ( ?, ?, ?, ?,? )",
+                    (self._name, self._address, self._lat, self._lng, self._status)
                 )
+                row = cursor.fetchone()
+                self._id = row[0]
+
+                conn.commit()
+
         except Exception as ex:
             raise ex
 
+    '''
     #get locations by user
     @staticmethod
     def get_locations_by_user(user_id):
@@ -150,17 +136,34 @@ class Location:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select Id, Name, Description, Address, Lat, Lng, Photo, UserID, Status "
+                    "Select Id, Name, Address, Lat, Lng, Status "
                     "From Locations Where UserID = ? Order By Name",
                     (user_id)
                 )
 
                 for row in cursor.fetchall():
                     location = Location(*row)
-                    location._userID = User(location._userID)
                     list.append(location)
 
         except Exception as ex:
             print("Error fetching locations by user...", ex)
 
-        return list
+        return list'''
+    
+    #search location based on lat and lng
+    @staticmethod
+    def get_by_coordinates(lat, lng):
+        try:
+            with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT LocationID, Name, Address, Lat, Lng, Status "
+                    "FROM Locations WHERE Lat = ? AND Lng = ?",
+                    (lat, lng)
+                )
+                row = cursor.fetchone()
+                if row:
+                    return Location(*row)
+                return None
+        except Exception as e:
+            raise e

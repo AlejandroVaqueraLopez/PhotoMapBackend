@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 import json
+import uuid
+import os
 from models.Photo import Photo, RecordNotFoundException
 from services.Metadata import get_image
-import base64
+from models.Location import Location
 
 
 # Export to server
@@ -19,42 +21,70 @@ def get_photos():
     except Exception as e:
         return jsonify({
             "status": 1,
-            'errorMessage' :(e)
+            'errorMessage' : str(e)
         })
   
 #POST
 @photo_bp.route("/photos", methods=["POST"])
 def add():
     try:
-        data = request.get_json()
-         
-        #base64 t bytes
-        image_base64 = data.get("imageData")
-        image_bytes = base64.b64decode(image_base64)
-        #get metadata
-        metadata_json = get_image(image_bytes)
+        file = request.files.get("photo")
+        user_id = request.form.get("userID")
+        title = request.form.get("title")
+        description = request.form.get("description")
 
-        # phto object
+        if not file:
+            return jsonify({"status": 1, "errorMessage": "No file provided"})
+
+        #generate unique name
+        filename = f"{uuid.uuid4()}.jpg"
+        upload_path = os.path.join("uploads", filename)
+        #save
+        file.save(upload_path)
+        #read metadata
+        image_bytes = open(upload_path, "rb").read()
+        metadata = get_image(image_bytes)
+
+        #latitude
+        lat = metadata.get("latitude")
+        #longitude
+        lng = metadata.get("longitude")
+        if lat is None or lng is None:
+            return jsonify({"status": 1, "errorMessage": "Image has no GPS metadata"})
+        
+        #checking if a location with those coordinates already exists
+        location = Location.get_by_coordinates(lat, lng)
+
+        #if does not exist
+        if not location:
+            #new location
+            location = Location()
+            location.name = "Auto-generated location"
+            #location.description = "Created from EXIF metadata" removed description
+            location.address = ""
+            location.lat = lat
+            location.lng = lng
+            location.photo = filename
+            location.userID = user_id
+            location.status = 1
+            location.add()
+        
+        
+        #create photo
         p = Photo()
+        p.userID = user_id
+        p.title = title
+        p.description = description
+        p.imagePath = filename
+        p.createdAt = None
+        p.locationID = location.id
 
-        p.userID = data.get("userID")
-        p.title = data.get("title")
-
-        #metadata json string
-        p.imageData = json.dumps(metadata_json)
-
-
-        p.contentType = data.get("contentType")
-        p.createdAt = data.get("createdAt")
-        p.locationID = data.get("locationID")
-
-        # send data
         p.add()
 
         return jsonify({
             "status": 0,
-            "message": "Photo added successfully",
-            "metadata": metadata_json
+            "message": "Photo uploaded successfully",
+            "locationID": location.id
         })
 
     except Exception as e:
@@ -107,8 +137,8 @@ def update_photo(photo_id):
 
         p.userID = data.get("userID")
         p.title = data.get("title")
-        p.imageData = data.get("imageData")
-        p.contentType = data.get("contentType")
+        p.description = data.get("description")
+        p.imagePath = data.get("imagePath")
         p.createdAt = data.get("createdAt")
         p.locationID = data.get("locationID")
 
@@ -124,3 +154,19 @@ def update_photo(photo_id):
             "status": 1,
             "errorMessage": str(e)
         })
+
+''' OG
+Para hacer POST a una foto, en postman se usa asi:
+{
+    "userID": 1,
+    "title": "Test Photo",
+    "imageData": "", <--AQUI PONER BASE64
+    "contentType": "image/jpeg",
+    "createdAt": "2026-02-14",
+    "locationID": 1
+}
+'''
+
+''' con foto
+
+'''

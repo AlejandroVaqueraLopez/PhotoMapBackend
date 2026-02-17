@@ -16,7 +16,7 @@ def get_locations():
     except Exception as e:
         return jsonify({
             "status": 1,
-            'errorMessage' :(e)
+            'errorMessage' : str(e)
         })
 
 # POST
@@ -29,12 +29,9 @@ def add():
         l = Location()
 
         l.name = data.get("name")
-        l.description = data.get("description")
         l.address = data.get("address")
         l.lat = data.get("lat")
         l.lng = data.get("lng")
-        l.photo = data.get("photo")
-        l.userID = data.get("userID")
         l.status = data.get("status", 1)
 
         # send data

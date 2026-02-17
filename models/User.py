@@ -13,17 +13,16 @@ class User:
         self._id=0
         self._name=""
         self._lastname=""
-        self._dateOfBirth=""
+        self._email=""
         self._username=""
         self._password=""
-        self._phone=""
         self._status=1
 
         #constructors
         if(len(args) == 1):
             self.load_by_id(args[0])
-        elif len(args) == 8:
-            self._id, self._name, self._lastname, self._dateOfBirth, self._username, self._password, self._phone, self._status = args
+        elif len(args) == 7:
+            self._id, self._name, self._lastname, self._email, self._username, self._password,  self._status = args
 
     @property
     def id(self):
@@ -47,11 +46,11 @@ class User:
         self._lastname = value
 
     @property
-    def dateOfBirth(self):
-        return self._dateOfBirth
-    @dateOfBirth.setter
-    def dateOfBirth(self,value):
-        self._dateOfBirth = value
+    def email(self):
+        return self._email
+    @email.setter
+    def email(self,value):
+        self._email = value
 
     @property
     def username(self):
@@ -70,13 +69,6 @@ class User:
             self._password = hashed.decode('utf-8')
 
     @property
-    def phone(self):
-        return self._phone
-    @phone.setter
-    def phone(self,value):
-        self._phone= value
-
-    @property
     def status(self):
         return self._status
     @status.setter
@@ -88,12 +80,12 @@ class User:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select Id, Name, Lastname, DateOfBirth, Username, Password, Phone, Status From Users Where Id = ?",
+                    "Select UserID, Name, Lastname, Email, Username, Password, Status From Users Where Id = ?",
                     user_id
                 )
                 row = cursor.fetchone()
                 if row:
-                    self._id, self._name, self._lastname, self._dateOfBirth, self._username, self._password, self._phone, self._status = row
+                    self._id, self._name, self._lastname, self._email, self._username, self._password, self._status = row
                 else:
                     raise RecordNotFoundException(f"User with id {user_id} was not found.")
 
@@ -106,9 +98,8 @@ class User:
                 "id":self._id,
                 "name":self._name,
                 "lastname":self._lastname,
-                "dateOfBirth": self._dateOfBirth.isoformat() if self._dateOfBirth else None,
+                "email":self._email,
                 "username":self._username,
-                "phone":self._phone,
                 "status":self._status
             }
         )
@@ -123,7 +114,7 @@ class User:
                 cursor = conn.cursor()
 
                 cursor.execute(
-                    "Select Id, Name, Lastname, DateOfBirth, Username, Password, Phone, Status From Users Order By Name,Lastname"
+                    "Select UserID, Name, Lastname, Email ,Username, Password, Status From Users Order By Name,Lastname"
                 )
                 for row in cursor.fetchall():
                     list.append(User(*row))
@@ -137,8 +128,8 @@ class User:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Insert Into Users (Name, Lastname, DateOfBirth, Username, Password, Phone, Status) Values (?, ?, ?, ?, ?, ?, ?)",
-                    (self._name, self._lastname, self._dateOfBirth, self._username, self._password, self._phone, self._status)
+                    "Insert Into Users (Name, Lastname, Email,Username, Password, Status) Values (?, ?, ?, ?, ?, ?)",
+                    (self._name, self._lastname, self._email, self._username, self._password, self._status)
                 )
         except Exception as ex:
             raise ex
@@ -149,15 +140,17 @@ class User:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select Id, Name, Lastname, DateOfBirth, Username, Password, Phone, Status From Users Where Username = ?",
+                    "Select UserID, Name, Lastname, Email ,Username, Password, Status From Users Where Username = ?",
                     (username)
                 )
                 row = cursor.fetchone()
-                if row :
+                if row:
                     return User(*row)
+                else:
+                    raise RecordNotFoundException(f"User with username {username} was not found.")
         except Exception as e:
-            pass
-        return None
+            raise e
+        return None    
 
     #check password
     def check_password(self, plain_password):
