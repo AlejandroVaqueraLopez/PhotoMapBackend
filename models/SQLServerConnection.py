@@ -11,7 +11,7 @@ class SQLServerConnection:
         #read environment variables
         server = os.getenv("SQL_SERVER")
         database = os.getenv("SQL_DATABASE")
-        username = os.getenv("SQL_USERNAME")
+        username = os.getenv("SQL_USER")
         password = os.getenv("SQL_PASSWORD")
 
         #check parameters
@@ -20,7 +20,7 @@ class SQLServerConnection:
         if not database:
             print("No database provided")
         if not username:
-            print("No username provided")
+            print("No user provided")
         if not password:
             print("No password provided")
         #connection string
