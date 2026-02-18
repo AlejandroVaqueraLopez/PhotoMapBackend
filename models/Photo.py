@@ -18,10 +18,12 @@ class Photo:
         self._imagePath = ""
         self._createdAt = ""
         self._locationID = None #clase Location
+        self._fileHash = ""
+
 
         #parameters
-        if len(args) ==7:
-            self._id, self._userID, self._title, self._description, self._imagePath, self._createdAt ,self._locationID = args
+        if len(args) ==8:
+            self._id, self._userID, self._title, self._description, self._imagePath, self._createdAt ,self._locationID , self._fileHash= args
         elif len(args) == 1:
             self.load_by_id(args[0])
 
@@ -62,18 +64,24 @@ class Photo:
     @locationID.setter
     def locationID(self, value): self._locationID = value
 
+    @property
+    def fileHash(self): return self._fileHash
+
+    @fileHash.setter
+    def fileHash(self, value): self._fileHash = value
+
     #load by id
     def load_by_id(self, photo_id):
         try:
             with SQLServerConnection.get_connection() as conn:
                     cursor = conn.cursor()
                     cursor.execute(
-                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID FROM Photos Where PhotoID = ?",
-                        photo_id
+                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID , FileHash FROM Photos Where PhotoID = ?",
+                        (photo_id,)
                     )
                     row = cursor.fetchone()
                     if row :
-                        self.id, self.userID, self.title, self._description , self._imagePath, self.createdAt, self.locationID = row
+                        self.id, self.userID, self.title, self._description, self._imagePath, self.createdAt, self.locationID, self._fileHash = row
                     else:
                         raise RecordNotFoundException(f"Photo with id {photo_id} was not found.")  
 
@@ -90,7 +98,8 @@ class Photo:
                     "description":self._description,
                     "imagePath": self._imagePath,
                     "createdAt": self._createdAt.isoformat() if self._createdAt else None,
-                    "LocationID":self._locationID
+                    "LocationID":self._locationID,
+                    "fileHash" : self._fileHash
                 }
             )
 
@@ -104,7 +113,7 @@ class Photo:
                     cursor = conn.cursor()
 
                     cursor.execute(
-                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID FROM Photos ORDER BY Title"
+                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID, FileHash FROM Photos ORDER BY Title"
                     )
                     for row in cursor.fetchall():
                         list.append(Photo(*row))
@@ -120,8 +129,8 @@ class Photo:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO Photos (UserID, Title, Description, ImagePath, LocationID) Values (?, ?, ?, ?, ?)",
-                   (self._userID, self._title, self._description ,self._imagePath, self._locationID)
+                    "INSERT INTO Photos (UserID, Title, Description, ImagePath, LocationID, FileHash) Values (?, ?, ?, ?, ?, ?)",
+                   (self._userID, self._title, self._description ,self._imagePath, self._locationID, self._fileHash)
             )
             conn.commit()
         except Exception as ex:
@@ -154,3 +163,16 @@ class Photo:
                 )
         except Exception as ex:
             raise ex
+
+    @staticmethod
+    def get_by_hash(file_hash):
+        try:
+            with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT TOP 1 PhotoID FROM Photos WHERE FileHash = ?",
+                    (file_hash,)
+                )
+                return cursor.fetchone()
+        except Exception as e:
+            raise e

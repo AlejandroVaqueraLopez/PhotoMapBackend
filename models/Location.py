@@ -60,8 +60,8 @@ class Location:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Where Id = ?",
-                    (id)
+                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Where LocationId = ?",
+                    (id,)
                 )
                 row = cursor.fetchone()
                 if row:
@@ -158,7 +158,7 @@ class Location:
                 cursor = conn.cursor()
                 cursor.execute(
                     "SELECT LocationID, Name, Address, Lat, Lng, Status "
-                    "FROM Locations WHERE Lat = ? AND Lng = ?",
+                    "FROM Locations WHERE ABS(Lat - ?) < 0.00001 AND ABS(Lng - ?) < 0.00001",
                     (lat, lng)
                 )
                 row = cursor.fetchone()
