@@ -176,3 +176,28 @@ class Photo:
                 return cursor.fetchone()
         except Exception as e:
             raise e
+
+    #get all photos by location ID
+    @staticmethod
+    def get_by_location(location_id):
+        with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                rows = cursor.execute("EXEC sp_GetPhotosByLocation @LocationID = ?", int(location_id)).fetchall()
+
+        photos = []
+
+        for row in rows:
+            p = Photo()
+            p.id = row.PhotoID
+            p.userID = row.UserID
+            p.title = row.Title
+            p.description = row.Description
+            p.imagePath = row.ImagePath
+            p.createdAt = row.CreatedAt
+            p.locationID = row.LocationID
+            p.fileHash = row.FileHash
+
+            photos.append(p)
+
+        conn.close()
+        return photos
