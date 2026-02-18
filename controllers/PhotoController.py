@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 from services.Geocoding import reverse_geocode
 
-
 # Export to server
 photo_bp = Blueprint('photo_bp', __name__)
  
@@ -174,12 +173,8 @@ def update_photo(photo_id):
 
         p = Photo(photo_id)
 
-        p.userID = data.get("userID")
         p.title = data.get("title")
         p.description = data.get("description")
-        p.imagePath = data.get("imagePath")
-        p.createdAt = data.get("createdAt")
-        p.locationID = data.get("locationID")
 
         p.update()
 
