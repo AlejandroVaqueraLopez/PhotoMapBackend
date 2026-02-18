@@ -30,7 +30,7 @@ class SQLServerConnection:
             f"DATABASE={database};"
             f"UID={username};"
             f"PWD={password};"
-            #"TrusterServerCertificate=yes;"
+            "TrusterServerCertificate=yes;"
         )
 
         #connection
