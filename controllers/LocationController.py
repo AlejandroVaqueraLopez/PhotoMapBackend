@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import json
 from models.Location import Location, RecordNotFoundException
+from models.Photo import Photo
 from security.auth import generate_token, require_auth
  
 # Export to server
@@ -65,4 +66,21 @@ def get_location_by_id(location_id):
         return jsonify({
             'status':1,
             'errorMessage' : str(e)
+        })
+
+#get photos from location ID
+@location_bp.route('/locations/<int:location_id>/photos', methods=['GET'])
+def get_photos_by_location(location_id):
+    try:
+        photos = Photo.get_by_location(location_id)
+
+        return jsonify({
+            "status": 0,
+            "data": [json.loads(p.to_json()) for p in photos]
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": 1,
+            "errorMessage": str(e)
         })

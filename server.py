@@ -14,7 +14,6 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-app = Flask(__name__)
 from flask_cors import CORS
 
 app.register_blueprint(user_bp)
