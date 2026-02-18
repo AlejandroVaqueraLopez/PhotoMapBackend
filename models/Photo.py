@@ -174,22 +174,3 @@ class Photo:
                 return cursor.fetchone()
         except Exception as e:
             raise e
-
- #get by location
-    @staticmethod
-    def get_by_location(self, location_id):
-        try:
-            with SQLServerConnection.get_connection() as conn:
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID , FileHash FROM Photos Where LocationID = ?",
-                        (location_id,)
-                    )
-                    row = cursor.fetchone()
-                    if row :
-                        self.id, self.userID, self.title, self._description, self._imagePath, self.createdAt, self.locationID, self._fileHash = row
-                    else:
-                        raise RecordNotFoundException(f"Photo with location id {location_id} was not found.")  
-
-        except Exception as e:
-                raise e
