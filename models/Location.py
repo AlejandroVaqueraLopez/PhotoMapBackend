@@ -158,7 +158,7 @@ class Location:
                 cursor = conn.cursor()
                 cursor.execute(
                     "SELECT LocationID, Name, Address, Lat, Lng, Status "
-                    "FROM Locations WHERE Lat = ? AND Lng = ?",
+                    "FROM Locations WHERE ABS(Lat - ?) < 0.00001 AND ABS(Lng - ?) < 0.00001",
                     (lat, lng)
                 )
                 row = cursor.fetchone()
