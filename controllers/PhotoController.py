@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 import json
-import uuid
 import os
+import hashlib
 from models.Photo import Photo, RecordNotFoundException
+from security.auth import generate_token, require_auth
 from services.Metadata import get_image
 from models.Location import Location
 
@@ -12,6 +13,7 @@ photo_bp = Blueprint('photo_bp', __name__)
  
 # GET ALL (/photos)
 @photo_bp.route("/photos", methods=["GET"])
+@require_auth
 def get_photos():
     try:
         return jsonify({
@@ -26,6 +28,7 @@ def get_photos():
   
 #POST
 @photo_bp.route("/photos", methods=["POST"])
+@require_auth
 def add():
     try:
         file = request.files.get("photo")
@@ -36,13 +39,30 @@ def add():
         if not file:
             return jsonify({"status": 1, "errorMessage": "No file provided"})
 
-        #generate unique name
-        filename = f"{uuid.uuid4()}.jpg"
+        #read bytes but don't save em
+        image_bytes = file.read()
+
+        #generate hash
+        file_hash = hashlib.sha256(image_bytes).hexdigest()
+
+        #checking if exists before saving
+        existing_photo = Photo.get_by_hash(file_hash)
+
+        if existing_photo:
+            return jsonify ({
+                "status":1,
+                "errorMessage": "This photo was already uploaded"
+            })
+
+        #generate unique name if not duplicate
+        filename = f"{file_hash}.jpg"
         upload_path = os.path.join("uploads", filename)
+
         #save
-        file.save(upload_path)
+        with open(upload_path, "wb") as f:
+            f.write(image_bytes)
+
         #read metadata
-        image_bytes = open(upload_path, "rb").read()
         metadata = get_image(image_bytes)
 
         #latitude
@@ -64,12 +84,9 @@ def add():
             location.address = ""
             location.lat = lat
             location.lng = lng
-            location.photo = filename
-            location.userID = user_id
             location.status = 1
             location.add()
-        
-        
+
         #create photo
         p = Photo()
         p.userID = user_id
@@ -78,6 +95,7 @@ def add():
         p.imagePath = filename
         p.createdAt = None
         p.locationID = location.id
+        p.fileHash = file_hash
 
         p.add()
 
@@ -95,6 +113,7 @@ def add():
 
 #GET /photo/id
 @photo_bp.route('/photos/<int:photo_id>', methods=['GET'])
+@require_auth
 def get_photo_by_id(photo_id):
     try:
         t = Photo(photo_id)
@@ -154,19 +173,3 @@ def update_photo(photo_id):
             "status": 1,
             "errorMessage": str(e)
         })
-
-''' OG
-Para hacer POST a una foto, en postman se usa asi:
-{
-    "userID": 1,
-    "title": "Test Photo",
-    "imageData": "", <--AQUI PONER BASE64
-    "contentType": "image/jpeg",
-    "createdAt": "2026-02-14",
-    "locationID": 1
-}
-'''
-
-''' con foto
-
-'''

@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify
 import json
 from models.Location import Location, RecordNotFoundException
+from security.auth import generate_token, require_auth
  
 # Export to server
 location_bp = Blueprint('location_bp', __name__)
  
 # GET ALL (/locations)
 @location_bp.route("/locations", methods=["GET"])
+@require_auth
 def get_locations():
     try:
         return jsonify({
@@ -21,6 +23,7 @@ def get_locations():
 
 # POST
 @location_bp.route("/locations", methods=["POST"])
+@require_auth
 def add():
     try:
         data = request.get_json()
@@ -47,8 +50,10 @@ def add():
             "status": 1,
             "errorMessage": str(e)
         })
+    
 # GET /location/id
 @location_bp.route('/locations/<int:location_id>', methods=['GET'])
+@require_auth
 def get_location_by_id(location_id):
     try:
         t = Location(location_id)
@@ -61,6 +66,3 @@ def get_location_by_id(location_id):
             'status':1,
             'errorMessage' : str(e)
         })
-    
-#POST
-'''post will go here :3'''
