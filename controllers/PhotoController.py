@@ -6,6 +6,9 @@ from models.Photo import Photo, RecordNotFoundException
 from security.auth import generate_token, require_auth
 from services.Metadata import get_image
 from models.Location import Location
+from dotenv import load_dotenv
+load_dotenv()
+from services.Geocoding import reverse_geocode
 
 
 # Export to server
@@ -13,7 +16,7 @@ photo_bp = Blueprint('photo_bp', __name__)
  
 # GET ALL (/photos)
 @photo_bp.route("/photos", methods=["GET"])
-@require_auth
+#@require_auth
 def get_photos():
     try:
         return jsonify({
@@ -28,7 +31,7 @@ def get_photos():
   
 #POST
 @photo_bp.route("/photos", methods=["POST"])
-@require_auth
+#@require_auth
 def add():
     try:
         file = request.files.get("photo")
@@ -75,13 +78,30 @@ def add():
         #checking if a location with those coordinates already exists
         location = Location.get_by_coordinates(lat, lng)
 
+        
+
         #if does not exist
-        if not location:
+        '''if not location:
             #new location
             location = Location()
             location.name = "Auto-generated location"
             #location.description = "Created from EXIF metadata" removed description
             location.address = ""
+            location.lat = lat
+            location.lng = lng
+            location.status = 1
+            location.add()'''
+
+
+        if not location:
+            location = Location()
+            geo_data = reverse_geocode(lat, lng)
+            if geo_data and geo_data.get("formatted_address"):
+                location.name = geo_data["formatted_address"]
+                location.address = geo_data["formatted_address"]
+            else:
+                location.name = "Unknown location"
+                location.address = ""
             location.lat = lat
             location.lng = lng
             location.status = 1

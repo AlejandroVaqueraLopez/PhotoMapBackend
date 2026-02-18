@@ -60,8 +60,8 @@ class Location:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Where LocationId = ?",
-                    (id,)
+                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Where LocationID = ?",
+                    (id)
                 )
                 row = cursor.fetchone()
                 if row:
