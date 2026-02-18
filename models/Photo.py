@@ -148,18 +148,16 @@ class Photo:
         except Exception as ex:
             raise ex
 
-    #modify
+   #modify
     def update(self):
         try:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    """UPDATE Photos
-                    SET UserID = ?, Title = ?, Description = ?, ImagePath = ?, CreatedAt = ?, LocationID = ?
-                    WHERE PhotoID = ?""",
-                    (self._userID, self._title,
-                    self._description, self._imagePath,self._createdAt,
-                    self._locationID, self._id)
+                     """UPDATE Photos
+                        SET Title = ?, Description = ?
+                        WHERE PhotoID = ?""",
+                    (self._title, self._description, self._id)
                 )
         except Exception as ex:
             raise ex
