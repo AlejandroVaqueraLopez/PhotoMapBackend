@@ -80,7 +80,7 @@ class User:
             with SQLServerConnection.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "Select UserID, Name, Lastname, Email, Username, Password, Status From Users Where Id = ?",
+                    "Select UserID, Name, Lastname, Email, Username, Password, Status From Users Where UserID = ?",
                     user_id
                 )
                 row = cursor.fetchone()
@@ -158,3 +158,45 @@ class User:
             plain_password.encode("utf-8"),
             self._password.encode("utf-8")
         )
+    
+
+    #DELETE USER (change status, soft delete)
+    def delete(self):
+        try:
+             with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE Users SET Status = 0 WHERE UserID = ?",
+                    (self._id,)
+                )
+        except Exception as ex:
+            raise ex
+
+    #UPDATE USER
+    def update(self):
+        try:
+            with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    """
+                    UPDATE Users
+                    SET Name = ?,
+                        Lastname = ?,
+                        Email = ?,
+                        Username = ?,
+                        Password = ?,
+                        Status = ?
+                    WHERE UserID = ?
+                    """,
+                    (
+                        self._name,
+                        self._lastname,
+                        self._email,
+                        self._username,
+                        self._password,
+                        self._status,
+                        self._id
+                    )
+                )
+        except Exception as ex:
+            raise ex
