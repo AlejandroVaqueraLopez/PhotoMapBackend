@@ -15,7 +15,7 @@ photo_bp = Blueprint('photo_bp', __name__)
  
 # GET ALL (/photos)
 @photo_bp.route("/photos", methods=["GET"])
-#@require_auth
+@require_auth
 def get_photos():
     try:
         return jsonify({
@@ -30,7 +30,7 @@ def get_photos():
   
 #POST
 @photo_bp.route("/photos", methods=["POST"])
-#@require_auth
+@require_auth
 def add():
     try:
         file = request.files.get("photo")
@@ -130,7 +130,7 @@ def add():
 
 #GET /photo/id
 @photo_bp.route('/photos/<int:photo_id>', methods=['GET'])
-#@require_auth
+@require_auth
 def get_photo_by_id(photo_id):
     try:
         t = Photo(photo_id)

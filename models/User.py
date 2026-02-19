@@ -123,6 +123,23 @@ class User:
             print("Error fetching users...", ex)
         return list
 
+    @staticmethod
+    def get_by_id(user_id):
+        try:
+            with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT UserID, Name, Lastname, Email, Username, Password, Status FROM Users WHERE UserID = ?",
+                    (user_id,)
+                )
+                row = cursor.fetchone()
+                if row:
+                    return User(*row)
+                else:
+                    raise RecordNotFoundException(f"User with id {user_id} was not found.")
+        except Exception as e:
+            raise e
+
     def add(self):
         try:
             with SQLServerConnection.get_connection() as conn:

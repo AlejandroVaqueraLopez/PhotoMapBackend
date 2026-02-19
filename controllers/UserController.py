@@ -8,7 +8,7 @@ user_bp = Blueprint('user_bp', __name__)
 
 # GET ALL (/Users)
 @user_bp.route("/users", methods=["GET"])
-#@require_auth #we are calling our own function
+@require_auth #we are calling our own function
 def get_users():
     try:
         return jsonify({
@@ -24,7 +24,7 @@ def get_users():
 
 # GET /users/id
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
-#@require_auth
+@require_auth
 def get_user_by_id(user_id):
     try:
         u = User(user_id)
@@ -40,7 +40,7 @@ def get_user_by_id(user_id):
 
 # add new user POST
 @user_bp.route("/users", methods=["POST"])
-#@require_auth
+@require_auth
 def add():
     try:
         data = request.get_json()
