@@ -25,7 +25,7 @@ def get_users():
 
 # GET /users/id
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
-@require_auth
+#@require_auth
 def get_user_by_id(user_id):
     try:
         u = User(user_id)
@@ -41,7 +41,7 @@ def get_user_by_id(user_id):
 
 # POST
 @user_bp.route("/users", methods=["POST"])
-@require_auth
+#@require_auth
 def add():
     try:
         data = request.get_json()

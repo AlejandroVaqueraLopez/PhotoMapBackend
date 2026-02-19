@@ -95,7 +95,14 @@ class Location:
                 cursor = conn.cursor()
 
                 cursor.execute(
-                    "Select LocationID, Name, Address, Lat, Lng, Status From Locations Order By Name"
+                    #"Select LocationID, Name, Address, Lat, Lng, Status From Locations Order By Name"
+                    '''SELECT LocationID, Name, Address, Lat, Lng, Status
+                        FROM Locations l
+                        WHERE EXISTS (
+                            SELECT 1 FROM Photos p
+                            WHERE p.LocationID = l.LocationID
+                        )
+                    ORDER BY Name'''
                 )
 
                 for row in cursor.fetchall():

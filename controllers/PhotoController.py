@@ -41,7 +41,6 @@ def add():
         if not file:
             return jsonify({"status": 1, "errorMessage": "No file provided"})
 
-        #read bytes but don't save em
         image_bytes = file.read()
 
         #generate hash
@@ -56,7 +55,6 @@ def add():
                 "errorMessage": "This photo was already uploaded"
             })
 
-        #generate unique name if not duplicate
         filename = f"{file_hash}.jpg"
         upload_path = os.path.join("uploads", filename)
 
@@ -132,7 +130,7 @@ def add():
 
 #GET /photo/id
 @photo_bp.route('/photos/<int:photo_id>', methods=['GET'])
-@require_auth
+#@require_auth
 def get_photo_by_id(photo_id):
     try:
         t = Photo(photo_id)

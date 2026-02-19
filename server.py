@@ -1,7 +1,8 @@
-from flask import Flask
+from flask import Flask,jsonify
 from controllers.UserController import user_bp
 from controllers.LocationController import location_bp
 from controllers.PhotoController import photo_bp
+from security.auth import require_auth
 import os
 from flask import send_from_directory
 
@@ -30,6 +31,16 @@ def home():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+'''
+@app.route("/dashboard")#to get the data from logsession
+@require_auth
+def dashboard():
+    return jsonify({
+        "status": 0,
+        "message": f"Welcome user"
+    })
+'''
 
 CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
 CORS(app, supports_credentials=True, origins=['http://127.0.0.1:5500'])
