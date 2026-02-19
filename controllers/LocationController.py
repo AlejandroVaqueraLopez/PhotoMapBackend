@@ -9,7 +9,7 @@ location_bp = Blueprint('location_bp', __name__)
  
 # GET ALL (/locations)
 @location_bp.route("/locations", methods=["GET"])
-#@require_auth
+@require_auth
 def get_locations():
     try:
         return jsonify({
@@ -24,7 +24,7 @@ def get_locations():
 
 # POST
 @location_bp.route("/locations", methods=["POST"])
-#@require_auth
+@require_auth
 def add():
     try:
         data = request.get_json()
@@ -54,7 +54,7 @@ def add():
     
 # GET /location/id
 @location_bp.route('/locations/<int:location_id>', methods=['GET'])
-#@require_auth
+@require_auth
 def get_location_by_id(location_id):
     try:
         t = Location(location_id)

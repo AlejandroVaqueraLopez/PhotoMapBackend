@@ -15,7 +15,7 @@ photo_bp = Blueprint('photo_bp', __name__)
  
 # GET ALL (/photos)
 @photo_bp.route("/photos", methods=["GET"])
-#@require_auth
+@require_auth
 def get_photos():
     try:
         return jsonify({
@@ -30,7 +30,7 @@ def get_photos():
   
 #POST
 @photo_bp.route("/photos", methods=["POST"])
-#@require_auth
+@require_auth
 def add():
     try:
         file = request.files.get("photo")
@@ -41,7 +41,6 @@ def add():
         if not file:
             return jsonify({"status": 1, "errorMessage": "No file provided"})
 
-        #read bytes but don't save em
         image_bytes = file.read()
 
         #generate hash
@@ -56,7 +55,6 @@ def add():
                 "errorMessage": "This photo was already uploaded"
             })
 
-        #generate unique name if not duplicate
         filename = f"{file_hash}.jpg"
         upload_path = os.path.join("uploads", filename)
 
