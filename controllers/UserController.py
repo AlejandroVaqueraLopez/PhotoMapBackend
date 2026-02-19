@@ -6,7 +6,6 @@ from security.auth import generate_token, require_auth
 # Export to server
 user_bp = Blueprint('user_bp', __name__)
 
-
 # GET ALL (/Users)
 @user_bp.route("/users", methods=["GET"])
 #@require_auth #we are calling our own function
@@ -39,7 +38,7 @@ def get_user_by_id(user_id):
             'errorMessage': str(e)
         })
 
-# POST
+# add new user POST
 @user_bp.route("/users", methods=["POST"])
 @require_auth
 def add():
@@ -70,7 +69,7 @@ def add():
             "errorMessage": str(e)
         })
 
-
+#log in
 @user_bp.route("/login", methods=["POST"])
 def login():
     try:
@@ -111,6 +110,7 @@ def login():
             "errorMessage": str(ex)
         }), 400
 
+#log out
 @user_bp.route("/logout", methods=["POST"])
 def logout():
     response = jsonify({
@@ -121,43 +121,52 @@ def logout():
     return response
 
 
-'''
-@user_bp.route("/login", methods=["POST"])
-def login():
+#delete (change status to 0)
+@user_bp.route("/users/<int:user_id>", methods=["DELETE"])
+@require_auth
+def delete_user(user_id):
     try:
-        # get data
+        u = User(user_id)
+        u.delete()  # soft delete
+
+        return jsonify({
+            "status": 0,
+            "message": "User deleted successfully"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": 1,
+            "errorMessage": str(e)
+        })
+
+#update
+@user_bp.route("/users/<int:user_id>", methods=["PUT"])
+@require_auth
+def update_user(user_id):
+    try:
         data = request.get_json()
 
-        # check data
-        if not data or "username" not in data or "password" not in data:
-            return jsonify({
-                "status" : 1,
-                "errorMessage" : "Username and password are required."
-            }), 400
-        
-        username = data["username"]
-        password = data["password"]
+        u = User(user_id)
 
-        # check if user and password exists
-        u = User.get_by_username(username)
-        if not u or not u.check_password(password):
-            return jsonify({
-                "status" : 1,
-                "errorMessage" : "Invalid credentials."
-            }), 401 # unauthorized
-        
-        # generate token
-        token = generate_token(u.id)
-        
+        u.name = data.get("name", u.name)
+        u.lastname = data.get("lastname", u.lastname)
+        u.email = data.get("email", u.email)
+        u.username = data.get("username", u.username)
+
+        if "password" in data and data["password"]:
+            u.password = data["password"]
+
+        u.status = data.get("status", u.status)
+
+        u.update()
+
         return jsonify({
-            'status' : 0,
-            'token' : token,
-            'user' : json.loads(u.to_json())
+            "status": 0,
+            "message": "User updated successfully"
         })
 
     except Exception as e:
         return jsonify({
-            'status': 1,
-            "errorMessage" : str(e)
+            "status": 1,
+            "errorMessage": str(e)
         })
-'''
