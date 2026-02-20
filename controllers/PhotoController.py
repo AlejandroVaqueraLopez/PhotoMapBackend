@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 import json
 import os
 import hashlib
@@ -34,7 +34,7 @@ def get_photos():
 def add():
     try:
         file = request.files.get("photo")
-        user_id = request.form.get("userID")
+        user_id = request.user_id
         title = request.form.get("title")
         description = request.form.get("description")
 
@@ -74,21 +74,6 @@ def add():
         
         #checking if a location with those coordinates already exists
         location = Location.get_by_coordinates(lat, lng)
-
-        
-
-        #if does not exist
-        '''if not location:
-            #new location
-            location = Location()
-            location.name = "Auto-generated location"
-            #location.description = "Created from EXIF metadata" removed description
-            location.address = ""
-            location.lat = lat
-            location.lng = lng
-            location.status = 1
-            location.add()'''
-
 
         if not location:
             location = Location()
