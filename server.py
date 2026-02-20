@@ -79,7 +79,10 @@ def get_current_user():
         user = User.get_by_id(request.user_id)
         return jsonify({
             "id": user.id,
-            "username": user.username
+            "username": user.username,
+            "name":user.name,
+            "lastname":user.lastname,
+            "email":user.email
         })
 
     except Exception as e:

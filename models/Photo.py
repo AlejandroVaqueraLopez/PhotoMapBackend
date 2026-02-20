@@ -19,11 +19,12 @@ class Photo:
         self._createdAt = ""
         self._locationID = None #clase Location
         self._fileHash = ""
+        self._userName = ""
 
 
         #parameters
-        if len(args) ==8:
-            self._id, self._userID, self._title, self._description, self._imagePath, self._createdAt ,self._locationID , self._fileHash= args
+        if len(args) ==9:
+            self._id, self._userID, self._title, self._description, self._imagePath, self._createdAt ,self._locationID , self._fileHash, self._userName = args
         elif len(args) == 1:
             self.load_by_id(args[0])
 
@@ -90,18 +91,17 @@ class Photo:
 
     #to json
     def to_json(self):
-            return json.dumps(
-                {
-                    "id":self._id,
-                    "userID":self._userID,
-                    "title": self._title,
-                    "description":self._description,
-                    "imagePath": self._imagePath,
-                    "createdAt": self._createdAt.isoformat() if self._createdAt else None,
-                    "LocationID":self._locationID,
-                    "fileHash" : self._fileHash
-                }
-            )
+        return json.dumps({
+            "id": self._id,
+            "userID": self._userID,
+            "userName": self._userName,
+            "title": self._title,
+            "description": self._description,
+            "imagePath": self._imagePath,
+            "createdAt": self._createdAt.isoformat() if self._createdAt else None,
+            "LocationID": self._locationID,
+            "fileHash": self._fileHash
+        })
 
     #get all (read)
     @staticmethod
@@ -112,9 +112,21 @@ class Photo:
                 with SQLServerConnection.get_connection() as conn:
                     cursor = conn.cursor()
 
-                    cursor.execute(
-                        "SELECT PhotoID, UserID, Title, Description, ImagePath, CreatedAt, LocationID, FileHash FROM Photos ORDER BY Title"
-                    )
+                    cursor.execute("""
+                            SELECT 
+                                p.PhotoID,
+                                p.UserID,
+                                p.Title,
+                                p.Description,
+                                p.ImagePath,
+                                p.CreatedAt,
+                                p.LocationID,
+                                p.FileHash,
+                                u.Username AS UserName
+                            FROM Photos p
+                            INNER JOIN Users u ON p.UserID = u.UserID
+                            ORDER BY p.Title
+                        """)
                     for row in cursor.fetchall():
                         list.append(Photo(*row))
 
